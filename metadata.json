@@ -1,0 +1,11 @@
+{
+  "uuid": "bullion@stylebarltd.github.io",
+  "name": "Bullion",
+  "description": "Gold, silver and crypto prices in your top bar. Live 24h change arrows, sparklines, gold/silver ratio, your choice of coins and currency.",
+  "shell-version": ["46", "47", "48", "49", "50"],
+  "settings-schema": "org.gnome.shell.extensions.bullion",
+  "gettext-domain": "bullion",
+  "url": "https://github.com/stylebarltd/bullion",
+  "version": 1,
+  "version-name": "1.0.0"
+}

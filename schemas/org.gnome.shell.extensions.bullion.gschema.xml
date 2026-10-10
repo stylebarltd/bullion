@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist gettext-domain="bullion">
+  <schema id="org.gnome.shell.extensions.bullion" path="/org/gnome/shell/extensions/bullion/">
+    <key name="coins" type="as">
+      <default>['bitcoin:BTC:Bitcoin', 'ethereum:ETH:Ethereum', 'solana:SOL:Solana', 'ripple:XRP:XRP']</default>
+      <summary>Tracked coins</summary>
+      <description>Entries of the form "coingecko-id:SYMBOL:Name", in display order.</description>
+    </key>
+    <key name="currency" type="s">
+      <default>'usd'</default>
+      <summary>Display currency</summary>
+      <description>Lowercase ISO 4217 code.</description>
+    </key>
+    <key name="show-gold" type="b">
+      <default>true</default>
+      <summary>Show gold</summary>
+    </key>
+    <key name="show-silver" type="b">
+      <default>true</default>
+      <summary>Show silver</summary>
+    </key>
+    <key name="show-ratio" type="b">
+      <default>true</default>
+      <summary>Show gold/silver ratio</summary>
+    </key>
+    <key name="panel-show-change" type="b">
+      <default>true</default>
+      <summary>Show 24h change percentage in the panel</summary>
+    </key>
+    <key name="rotate-seconds" type="i">
+      <range min="2" max="60"/>
+      <default>5</default>
+      <summary>Seconds between panel asset rotation</summary>
+    </key>
+    <key name="refresh-seconds" type="i">
+      <range min="30" max="3600"/>
+      <default>60</default>
+      <summary>Seconds between price refreshes</summary>
+    </key>
+  </schema>
+</schemalist>

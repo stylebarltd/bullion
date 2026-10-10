@@ -1,0 +1,8 @@
+.bullion-up { color: #57e389; }
+.bullion-down { color: #ff7b63; }
+.bullion-flat { color: #9a9996; }
+.bullion-sym { min-width: 28px; }
+.bullion-val { min-width: 96px; text-align: right; }
+.bullion-chg { min-width: 78px; text-align: right; }
+.bullion-meta { color: #9a9996; font-size: 0.9em; }
+.bullion-stale { opacity: 0.55; }
