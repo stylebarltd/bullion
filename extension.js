@@ -75,7 +75,7 @@ class Indicator extends PanelMenu.Button {
         this._ext = ext;
         this._settings = settings;
         this._cancellable = new Gio.Cancellable();
-        this._session = new Soup.Session({timeout: 15, user_agent: 'gnome-shell-bullion/1.0 (+https://github.com/stylebarltd/bullion)'});
+        this._session = new Soup.Session({timeout: 15, user_agent: 'gnome-shell-bullion/1.0 (+https://github.com/stylebarltd/bullion-gnome)'});
 
         this._crypto = {};
         this._metalsUsd = {};

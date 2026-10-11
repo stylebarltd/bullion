@@ -22,8 +22,8 @@ arrows. Open the menu for sparklines, the gold/silver ratio and everything at a 
 **From source (development):**
 
 ```sh
-git clone https://github.com/stylebarltd/bullion.git
-cd bullion
+git clone https://github.com/stylebarltd/bullion-gnome.git
+cd bullion-gnome
 make dev          # symlinks the checkout into ~/.local/share/gnome-shell/extensions
 ```
 
