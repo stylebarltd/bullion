@@ -27,6 +27,11 @@
       <default>true</default>
       <summary>Show 24h change percentage in the panel</summary>
     </key>
+    <key name="panel-assets" type="as">
+      <default>[]</default>
+      <summary>Assets rotating in the panel</summary>
+      <description>Keys of tracked assets ("XAU", "XAG" or a CoinGecko id) shown in the panel rotation. Empty shows all tracked assets.</description>
+    </key>
     <key name="rotate-seconds" type="i">
       <range min="2" max="60"/>
       <default>5</default>

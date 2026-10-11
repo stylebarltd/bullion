@@ -94,7 +94,7 @@ class Indicator extends PanelMenu.Button {
         // Fixed-width slots (see _fitPanel) so rotating between assets doesn't shift the top bar.
         this._labelBin = new St.Bin({child: this._label});
         this._arrowBin = new St.Bin({child: this._arrow});
-        const box = new St.BoxLayout();
+        const box = new St.BoxLayout({style_class: 'bullion-chip'});
         for (const w of [this._iconBin, this._labelBin, this._arrowBin]) box.add_child(w);
         this.add_child(box);
 
@@ -141,6 +141,13 @@ class Indicator extends PanelMenu.Button {
             out.push({key: 'XAG', sym: 'XAG', name: 'Silver', kind: 'metal'});
         for (const c of this._settings.get_strv('coins')) out.push(parseCoin(c));
         return out;
+    }
+
+    // Assets that rotate in the panel: the 'panel-assets' subset of the tracked ones, or all when empty.
+    _rotation() {
+        const keys = new Set(this._settings.get_strv('panel-assets'));
+        const chosen = this._tracked.filter(a => keys.has(a.key));
+        return chosen.length ? chosen : this._tracked;
     }
 
     _onSettingsChanged(key) {
@@ -214,6 +221,7 @@ class Indicator extends PanelMenu.Button {
         this._section.removeAll();
         this._rows = {};
         this._tracked = this._assets();
+        this._panelAssets = this._rotation();
         for (const a of this._tracked) {
             const item = new PopupMenu.PopupBaseMenuItem({reactive: false});
             const badge = this._badge(a, 20);
@@ -225,7 +233,7 @@ class Indicator extends PanelMenu.Button {
             this._section.addMenuItem(item);
             this._rows[a.key] = {item, val, chg, spark, name};
         }
-        this._idx = Math.min(this._idx, Math.max(0, this._tracked.length - 1));
+        this._idx = Math.min(this._idx, Math.max(0, this._panelAssets.length - 1));
         this._shownKey = null;
         this._render();
     }
@@ -234,8 +242,8 @@ class Indicator extends PanelMenu.Button {
         if (this._rotateId) GLib.source_remove(this._rotateId);
         const secs = this._settings.get_int('rotate-seconds');
         this._rotateId = GLib.timeout_add_seconds(GLib.PRIORITY_DEFAULT, secs, () => {
-            if (this._tracked.length > 1) {
-                this._idx = (this._idx + 1) % this._tracked.length;
+            if (this._panelAssets.length > 1) {
+                this._idx = (this._idx + 1) % this._panelAssets.length;
                 this._renderPanel();
             }
             return GLib.SOURCE_CONTINUE;
@@ -433,11 +441,11 @@ class Indicator extends PanelMenu.Button {
         return {price, arrow: showChg ? `${arrow} ${Math.abs(d.chg).toFixed(1)}%` : arrow, chg: d.chg};
     }
 
-    // Size both slots to the widest text of any tracked asset.
+    // Size both slots to the widest text of any asset in the rotation.
     _fitPanel() {
         if (!this._label.get_stage()) return;   // not styled yet; the next refresh fits it
         let price = 0, arrow = 0;
-        for (const a of this._tracked) {
+        for (const a of this._panelAssets) {
             const t = this._panelText(a);
             this._label.text = t.price;
             this._arrow.text = t.arrow;
@@ -452,7 +460,7 @@ class Indicator extends PanelMenu.Button {
     }
 
     _renderPanel() {
-        const a = this._tracked[this._idx];
+        const a = this._panelAssets[this._idx];
         if (!a) {
             this._label.text = 'Bullion';
             this._arrow.text = '';

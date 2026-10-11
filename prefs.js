@@ -61,8 +61,45 @@ export default class BullionPreferences extends ExtensionPreferences {
         panel.add(this._spinRow(settings, 'rotate-seconds', 'Rotate every (seconds)', 'How long each asset stays in the panel', 2, 60, 1));
         panel.add(this._spinRow(settings, 'refresh-seconds', 'Refresh every (seconds)', 'CoinGecko\'s free tier is rate limited; 60 or more is safe', 30, 3600, 10));
         page.add(panel);
+        page.add(this._rotationGroup(settings));
 
         return page;
+    }
+
+    // One switch per tracked asset; 'panel-assets' holds the chosen keys, empty meaning all.
+    _rotationGroup(settings) {
+        const group = new Adw.PreferencesGroup({
+            title: 'Panel rotation',
+            description: 'Which assets take turns in the top bar. All of them stay in the menu.',
+        });
+        let rows = [];
+        const assets = () => [
+            ...(settings.get_boolean('show-gold') ? [{key: 'XAU', name: 'Gold', sym: 'XAU'}] : []),
+            ...(settings.get_boolean('show-silver') ? [{key: 'XAG', name: 'Silver', sym: 'XAG'}] : []),
+            ...settings.get_strv('coins').map(parseCoin).map(c => ({key: c.id, name: c.name, sym: c.sym})),
+        ];
+        const rebuild = () => {
+            for (const r of rows) group.remove(r);
+            rows = [];
+            const all = assets();
+            const chosen = new Set(settings.get_strv('panel-assets').filter(k => all.some(a => a.key === k)));
+            const on = a => !chosen.size || chosen.has(a.key);
+            const onCount = all.filter(on).length;
+            for (const a of all) {
+                const row = new Adw.SwitchRow({title: a.name, subtitle: a.sym, active: on(a)});
+                row.sensitive = !(on(a) && onCount === 1);   // keep at least one in the panel
+                row.connect('notify::active', () => {
+                    const keys = all.filter(x => (x === a ? row.active : on(x))).map(x => x.key);
+                    settings.set_strv('panel-assets', keys.length === all.length ? [] : keys);
+                });
+                group.add(row);
+                rows.push(row);
+            }
+        };
+        for (const key of ['panel-assets', 'coins', 'show-gold', 'show-silver'])
+            settings.connect(`changed::${key}`, () => GLib.idle_add(GLib.PRIORITY_DEFAULT, () => { rebuild(); return GLib.SOURCE_REMOVE; }));
+        rebuild();
+        return group;
     }
 
     _spinRow(settings, key, title, subtitle, lo, hi, step) {
