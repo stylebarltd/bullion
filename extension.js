@@ -89,10 +89,13 @@ class Indicator extends PanelMenu.Button {
         this._rows = {};
 
         this._iconBin = new St.Bin({y_align: Clutter.ActorAlign.CENTER, style: 'margin-right: 6px;'});
-        this._label = new St.Label({text: 'Loading…', y_align: Clutter.ActorAlign.CENTER});
-        this._arrow = new St.Label({text: '', y_align: Clutter.ActorAlign.CENTER, style: 'margin-left: 5px;'});
+        this._label = new St.Label({text: 'Loading…', style_class: 'bullion-panel', x_align: Clutter.ActorAlign.END, y_align: Clutter.ActorAlign.CENTER});
+        this._arrow = new St.Label({text: '', style_class: 'bullion-panel', y_align: Clutter.ActorAlign.CENTER, style: 'margin-left: 5px;'});
+        // Fixed-width slots (see _fitPanel) so rotating between assets doesn't shift the top bar.
+        this._labelBin = new St.Bin({child: this._label});
+        this._arrowBin = new St.Bin({child: this._arrow});
         const box = new St.BoxLayout();
-        for (const w of [this._iconBin, this._label, this._arrow]) box.add_child(w);
+        for (const w of [this._iconBin, this._labelBin, this._arrowBin]) box.add_child(w);
         this.add_child(box);
 
         this._section = new PopupMenu.PopupMenuSection();
@@ -417,7 +420,35 @@ class Indicator extends PanelMenu.Button {
         this._updatedLabel.text = this._updated
             ? `Updated ${this._updated.format('%H:%M')}${this._stale ? ' (offline — showing old data)' : ''}`
             : (this._stale ? 'Offline — could not fetch prices' : 'Fetching…');
+        this._fitPanel();
         this._renderPanel();
+    }
+
+    _panelText(a) {
+        const d = this._dataFor(a);
+        const price = d ? fmtPrice(d.price, this._currency) : '…';
+        if (!d || d.chg == null) return {price, arrow: '', chg: null};
+        const arrow = d.chg >= 0 ? '▲' : '▼';
+        const showChg = this._settings.get_boolean('panel-show-change');
+        return {price, arrow: showChg ? `${arrow} ${Math.abs(d.chg).toFixed(1)}%` : arrow, chg: d.chg};
+    }
+
+    // Size both slots to the widest text of any tracked asset.
+    _fitPanel() {
+        if (!this._label.get_stage()) return;   // not styled yet; the next refresh fits it
+        let price = 0, arrow = 0;
+        for (const a of this._tracked) {
+            const t = this._panelText(a);
+            this._label.text = t.price;
+            this._arrow.text = t.arrow;
+            price = Math.max(price, this._label.get_preferred_width(-1)[1]);
+            arrow = Math.max(arrow, this._arrow.get_preferred_width(-1)[1]);
+        }
+        // Set natural width too: a min above the natural width makes Clutter abort the shell.
+        for (const [bin, w] of [[this._labelBin, price], [this._arrowBin, arrow]]) {
+            bin.min_width = w;
+            bin.natural_width = w;
+        }
     }
 
     _renderPanel() {
@@ -432,16 +463,10 @@ class Indicator extends PanelMenu.Button {
             this._iconBin.set_child(this._badge(a, 16));
             this._shownKey = a.key;
         }
-        const d = this._dataFor(a);
-        this._label.text = d ? fmtPrice(d.price, this._currency) : '…';
-        const showChg = this._settings.get_boolean('panel-show-change');
-        if (d && d.chg != null) {
-            const arrow = d.chg >= 0 ? '▲' : '▼';
-            this._arrow.text = showChg ? `${arrow} ${Math.abs(d.chg).toFixed(1)}%` : arrow;
-            this._arrow.style_class = trendClass(d.chg);
-        } else {
-            this._arrow.text = '';
-        }
+        const t = this._panelText(a);
+        this._label.text = t.price;
+        this._arrow.text = t.arrow;
+        if (t.chg != null) this._arrow.style_class = `bullion-panel ${trendClass(t.chg)}`;
         if (this._stale) this.add_style_class_name('bullion-stale');
         else this.remove_style_class_name('bullion-stale');
     }

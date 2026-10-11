@@ -6,3 +6,4 @@
 .bullion-chg { min-width: 78px; text-align: right; }
 .bullion-meta { color: #9a9996; font-size: 0.9em; }
 .bullion-stale { opacity: 0.55; }
+.bullion-panel { font-feature-settings: "tnum"; }
