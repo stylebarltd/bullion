@@ -72,6 +72,7 @@ const Indicator = GObject.registerClass(
 class Indicator extends PanelMenu.Button {
     _init(ext, settings) {
         super._init(0.0, 'Bullion');
+        this.add_style_class_name('bullion-button');
         this._ext = ext;
         this._settings = settings;
         this._cancellable = new Gio.Cancellable();
