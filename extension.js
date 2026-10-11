@@ -435,7 +435,8 @@ class Indicator extends PanelMenu.Button {
     _panelText(a) {
         const d = this._dataFor(a);
         const price = d ? fmtPrice(d.price, this._currency) : '…';
-        if (!d || d.chg == null) return {price, arrow: '', chg: null};
+        // metals have no 24h change; fill the arrow slot with the unit instead
+        if (!d || d.chg == null) return {price, arrow: d && a.kind === 'metal' ? '/oz' : '', chg: null};
         const arrow = d.chg >= 0 ? '▲' : '▼';
         const showChg = this._settings.get_boolean('panel-show-change');
         return {price, arrow: showChg ? `${arrow} ${Math.abs(d.chg).toFixed(1)}%` : arrow, chg: d.chg};
@@ -474,7 +475,7 @@ class Indicator extends PanelMenu.Button {
         const t = this._panelText(a);
         this._label.text = t.price;
         this._arrow.text = t.arrow;
-        if (t.chg != null) this._arrow.style_class = `bullion-panel ${trendClass(t.chg)}`;
+        this._arrow.style_class = `bullion-panel ${trendClass(t.chg)}`;
         if (this._stale) this.add_style_class_name('bullion-stale');
         else this.remove_style_class_name('bullion-stale');
     }
